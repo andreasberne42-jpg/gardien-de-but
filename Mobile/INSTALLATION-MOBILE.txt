@@ -1,0 +1,24 @@
+GOALKEEPER PRO — VERSION MOBILE 2.7
+
+Cette version est preparee comme une PWA installable sur Android et iPhone.
+
+MISE EN LIGNE OBLIGATOIRE
+Pour installer une PWA, les fichiers doivent etre servis depuis une adresse HTTPS (ou localhost). Un simple fichier HTML copie sur le telephone ne permet pas l'installation complete ni le service worker hors ligne.
+
+CONTENU
+- index.html : application complete
+- manifest.webmanifest : nom, icone et mode application
+- service-worker.js : cache de l'application pour l'utilisation hors ligne
+- icon-192.png et icon-512.png : icones Android
+- icon.svg : icone vectorielle
+
+INSTALLATION ANDROID
+1. Publier le contenu de ce dossier sur un hebergement statique HTTPS (par exemple GitHub Pages ou Netlify).
+2. Ouvrir l'adresse HTTPS dans Chrome sur le telephone.
+3. Menu ⋮ > Installer l'application (ou Ajouter a l'ecran d'accueil).
+4. Confirmer. GoalKeeper Pro apparait alors comme une application.
+
+IMPORTANT
+La progression sauvegardee dans le navigateur du PC n'est pas automatiquement transferee sur le telephone. L'application commencera avec une sauvegarde locale distincte sur le telephone.
+
+Aucune publication en ligne ni compte d'hebergement n'a ete cree automatiquement.
