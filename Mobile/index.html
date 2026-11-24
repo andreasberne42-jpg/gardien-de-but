@@ -108,7 +108,7 @@ body{background:radial-gradient(950px 620px at 72% -12%,rgba(35,117,220,.24),tra
     <button data-page="challenges"><span class="ico">✦</span>Défis</button>
     <button data-page="profile"><span class="ico">◎</span>Profil</button>
   </nav>
-  <div class="side-bottom"><div class="side-note"><strong>Le conseil du coach</strong>La régularité fait la différence. Concentre-toi sur une bonne technique avant d'accélérer.</div><div class="version">GOALKEEPER PRO Â· VERSION 2.7</div></div>
+  <div class="side-bottom"><div class="side-note"><strong>Le conseil du coach</strong>La régularité fait la différence. Concentre-toi sur une bonne technique avant d'accélérer.</div><div class="version">GOALKEEPER PRO · VERSION 2.8</div></div>
 </aside>
 <main class="main">
   <header class="topbar">
@@ -210,9 +210,9 @@ const exercises=[
 {id:'strength-core',name:'Renforcement gardien : tronc et stabilité',category:'Renforcement',icon:'🛡️',time:'15 min',difficulty:'Avancé',xp:40,desc:'Travailler la stabilité du tronc avec des exercices au sol sans appui sur les mains.',steps:['Allonge-toi sur le dos, genoux fléchis, et prépare-toi avec quelques respirations.','Fais deux séries de huit dead bugs de chaque côté, lentement.','Fais deux séries de dix ponts fessiers en gardant le bassin stable.','Termine par deux séries de huit touchers de talon alternés, sans tirer sur la nuque.','Récupère tranquillement entre les séries.'],safety:'Ces mouvements évitent l’appui sur les poignets. Ne force pas l’amplitude et arrête si le dos ou le cou devient douloureux.'}
 ];
 const defaultState={name:'Mon gardien',level:'Débutant',xp:0,completed:[],watched:[],soloCompleted:[]};
-let state={...defaultState};let currentExercise=null;let activeFilter='Tous';let activeLevel='Débutant';
+let state={...defaultState};let currentExercise=null;let activeFilter='Tous';let activeLevel='Tous';
 try{const saved=JSON.parse(localStorage.getItem('gkpro-state')||'null');if(saved)state={...defaultState,...saved}}catch(e){}
-activeLevel=state.level||'Débutant';
+activeLevel='Tous';
 const $=id=>document.getElementById(id);
 function persist(){localStorage.setItem('gkpro-state',JSON.stringify(state));renderAll()}
 function levelNumber(){return Math.floor(state.xp/150)+1}
@@ -302,7 +302,37 @@ area.innerHTML='<b>'+done+' / '+plan.items.length+' ateliers terminés</b><div c
 }
 function clearSoloSession(key){state.soloCompleted=(state.soloCompleted||[]).filter(x=>!x.startsWith(key+':')||x===key+':rewarded');localStorage.setItem('gkpro-state',JSON.stringify(state));startSolo(key)}
 function exerciseCard(e){const done=state.completed.includes(e.id);return `<article class="workout-card"><div class="workout-top"><div class="workout-icon">${e.icon}</div><span class="tag">${e.category.toUpperCase()}</span></div><h3>${e.name}</h3><p>${e.desc}</p><div class="meta"><span>◷ ${e.time}</span><span>✦ +${e.xp} XP</span></div><div class="card-actions"><span class="${done?'done-label':'muted small'}">${done?'✓ Terminé':'À faire'}</span><button class="btn btn-secondary btn-small" onclick="openExercise('${e.id}')">Voir la fiche →</button></div></article>`}
-function renderAll(){const done=state.completed.filter(id=>exercises.some(e=>e.id===id)).length,total=exercises.length,progress=Math.min(100,Math.round(done/total*100));document.querySelectorAll('#levelFilters .filter').forEach(x=>x.classList.toggle('active',x.dataset.level===activeLevel));$('topXP').textContent=state.xp+' XP';$('topName').textContent=state.name;$('avatarInitial').textContent=(state.name.trim()[0]||'G').toUpperCase();$('statXP').textContent=state.xp;$('statDone').textContent=done;$('statLevel').textContent='Niveau '+levelNumber();$('dailyRing').style.setProperty('--progress',progress+'%');$('dailyPercent').textContent=progress+'%';$('dailyCount').textContent=done+' / '+total+' exercices';const recommended=exercises.filter(e=>e.difficulty===state.level);$('homeExercises').innerHTML=(recommended.length?recommended:exercises).slice(0,4).map(exerciseCard).join('');$('exerciseCounter').textContent=done+' / '+total+' TERMINÉS';$('exerciseList').innerHTML=exercises.filter(e=>(activeFilter==='Tous'||e.category===activeFilter)&&(activeLevel==='Tous'||e.difficulty===activeLevel)).map(e=>{const isDone=state.completed.includes(e.id);return `<div class="exercise-row"><div class="workout-icon">${e.icon}</div><div><h3>${e.name} ${isDone?'<span class="done-label">✓</span>':''}</h3><p>${e.desc} · ${e.time} · +${e.xp} XP · <span class="difficulty-pill ${e.difficulty==='Avancé'?'adv':e.difficulty==='Intermédiaire'?'inter':''}">${e.difficulty}</span></p></div><button class="btn btn-secondary btn-small" onclick="openExercise('${e.id}')">${isDone?'Revoir':'Voir la fiche'}</button></div>`}).join('');renderChallenges();$('profileName').textContent=state.name;$('profileLevel').textContent='NIVEAU '+levelNumber();$('nameInput').value=state.name;$('levelSelect').value=state.level;$('challengeDone').textContent=challengeList().filter(c=>c.done).length;$('totalXP2').textContent=state.xp;$('nextLevel').textContent=nextLevelXP()}
+function renderAll(){
+  const done=state.completed.filter(id=>exercises.some(e=>e.id===id)).length;
+  const total=exercises.length;
+  const progress=total?Math.min(100,Math.round(done/total*100)):0;
+  const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
+  const recommended=exercises.filter(e=>e.difficulty===state.level);
+  const homeExercises=$('homeExercises');
+  if(homeExercises)homeExercises.innerHTML=(recommended.length?recommended:exercises).slice(0,4).map(exerciseCard).join('');
+  document.querySelectorAll('#levelFilters .filter').forEach(x=>x.classList.toggle('active',x.dataset.level===activeLevel));
+  set('topXP',state.xp+' XP');set('topName',state.name);
+  set('avatarInitial',(state.name.trim()[0]||'G').toUpperCase());
+  set('statXP',state.xp);set('statDone',done);set('statLevel','Niveau '+levelNumber());
+  const ring=$('dailyRing');if(ring)ring.style.setProperty('--progress',progress+'%');
+  set('dailyPercent',progress+'%');set('dailyCount',done+' / '+total+' exercices');
+  set('exerciseCounter',done+' / '+total+' TERMINÉS');
+  const list=$('exerciseList');
+  if(list){
+    const visible=exercises.filter(e=>(activeFilter==='Tous'||e.category===activeFilter)&&(activeLevel==='Tous'||e.difficulty===activeLevel));
+    list.innerHTML=visible.map(e=>{
+      const isDone=state.completed.includes(e.id);
+      return '<div class="exercise-row"><div class="workout-icon">'+e.icon+'</div><div><h3>'+e.name+' '+(isDone?'<span class="done-label">✓</span>':'')+'</h3><p>'+e.desc+' · '+e.time+' · +'+e.xp+' XP · <span class="difficulty-pill '+(e.difficulty==='Avancé'?'adv':e.difficulty==='Intermédiaire'?'inter':'')+'">'+e.difficulty+'</span></p></div><button class="btn btn-secondary btn-small" onclick="openExercise(\''+e.id+'\')">'+(isDone?'Revoir':'Voir la fiche')+'</button></div>';
+    }).join('');
+    if(!visible.length)list.innerHTML='<div class="empty">Aucun exercice ne correspond à ces filtres. Choisis « Tous » pour tout afficher.</div>';
+  }
+  if(typeof renderChallenges==='function' && $('challengeGrid'))renderChallenges();
+  set('profileName',state.name);set('profileLevel','NIVEAU '+levelNumber());
+  const nameInput=$('nameInput');if(nameInput)nameInput.value=state.name;
+  const levelSelect=$('levelSelect');if(levelSelect)levelSelect.value=state.level;
+  set('challengeDone',typeof challengeList==='function'?challengeList().filter(c=>c.done).length:0);
+  set('totalXP2',state.xp);set('nextLevel',nextLevelXP());
+}
 function renderExerciseDemo(e){
 const motion=e.category==='Plongeons'?'dive':e.category==='Réflexes'?'react':e.category==='Déplacements'||e.category==='Coordination'?'move':e.category==='Technique'||e.category==='Relances'?'pass':e.category==='Échauffement'?'warm':'position';
 const label={dive:'PLONGEON ET ARRÊT DU BALLON',react:'RÉACTION ET PRISE D’INFORMATION',move:'APPUI ET DÉPLACEMENT LATÉRAL',pass:'CONTRÔLE ET PASSE AU SOL',warm:'ÉCHAUFFEMENT PROGRESSIF',position:'PLACEMENT ET REPOSITIONNEMENT'}[motion];
@@ -359,3 +389,4 @@ if('serviceWorker' in navigator && (location.protocol==='https:' || location.hos
 </script>
 </body>
 </html>
+
